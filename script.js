@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOMINÓ PRO</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+background:#0b1020;
+overflow:hidden;
+color:white;
+}
+
+/* ===== FONDO ===== */
+
+#gameContainer{
+width:100vw;
+height:100vh;
+position:relative;
+background:
+radial-gradient(circle at center,#166534 0%,#14532d 60%,#0f3f23 100%);
+}
+
+/* ===== MESA ===== */
+
+#table{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+width:92%;
+height:88%;
+background:#166534;
+border-radius:35px;
+border:12px solid #3b2a1a;
+box-shadow:
+inset 0 0 40px rgba(0,0,0,.6),
+0 0 50px rgba(0,0,0,.7);
+overflow:hidden;
+}
+
+/* ===== TABLERO ===== */
+
+#board{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+display:flex;
+align-items:center;
+gap:3px;
+flex-wrap:wrap;
+max-width:75%;
+justify-content:center;
+padding:20px;
+border-radius:20px;
+background:rgba(0,0,0,.15);
+min-height:120px;
+}
+
+/* ===== FICHAS ===== */
+
+.domino{
+width:50px;
+height:100px;
+background:#f8f4e8;
+border-radius:10px;
+border:2px solid black;
+display:flex;
+flex-direction:column;
+position:relative;
+cursor:pointer;
+transition:.2s;
+box-shadow:
+0 4px 10px rgba(0,0,0,.4),
+inset 0 0 10px rgba(255,255,255,.5);
+}
+
+.domino:hover{
+transform:translateY(-6px) scale(1.05);
+}
+
+.domino.horizontal{
+width:100px;
+height:50px;
+flex-direction:row;
+}
+
+.half{
+flex:1;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+grid-template-rows:repeat(3,1fr);
+padding:4px;
+}
+
+.horizontal .half{
+border-right:2px solid black;
+}
+
+.domino:not(.horizontal) .half:first-child{
+border-bottom:2px solid black;
+}
+
+.dot{
+width:8px;
+height:8px;
+background:black;
+border-radius:50%;
+align-self:center;
+justify-self:center;
+}
+
+/* ===== FICHAS OCULTAS ===== */
+
+.hiddenDomino{
+width:40px;
+height:75px;
+background:#111827;
+border:2px solid #cbd5e1;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,.4);
+}
+
+.hidden-horizontal{
+width:75px;
+height:40px;
+}
+
+/* ===== MANOS ===== */
+
+#topHand,
+#bottomHand{
+position:absolute;
+display:flex;
+gap:5px;
+left:50%;
+transform:translateX(-50%);
+}
+
+#topHand{
+top:25px;
+}
+
+#bottomHand{
+bottom:25px;
+}
+
+#leftHand,
+#rightHand{
+position:absolute;
+display:flex;
+flex-direction:column;
+gap:5px;
+top:50%;
+transform:translateY(-50%);
+}
+
+#leftHand{
+left:20px;
+}
+
+#rightHand{
+right:20px;
+}
+
+/* ===== NOMBRES ===== */
+
+.player-name{
+position:absolute;
+font-size:20px;
+font-weight:bold;
+background:rgba(0,0,0,.5);
+padding:10px 20px;
+border-radius:15px;
+backdrop-filter:blur(5px);
+}
+
+#topPlayer{
+top:120px;
+left:50%;
+transform:translateX(-50%);
+}
+
+#leftPlayer{
+left:120px;
+top:50%;
+transform:translateY(-50%);
+}
+
+#rightPlayer{
+right:120px;
+top:50%;
+transform:translateY(-50%);
+}
+
+#bottomPlayer{
+bottom:130px;
+left:50%;
+transform:translateX(-50%);
+}
+
+/* ===== BOTONES ===== */
+
+#controls{
+position:absolute;
+left:30px;
+bottom:30px;
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.control-btn{
+padding:16px 24px;
+border:none;
+border-radius:15px;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+transition:.2s;
+}
+
+.control-btn:hover{
+transform:scale(1.05);
+}
+
+#drawBtn{
+background:#2563eb;
+color:white;
+}
+
+#passBtn{
+background:#111827;
+color:white;
+}
+
+.control-btn:disabled{
+opacity:.4;
+cursor:not-allowed;
+}
+
+/* ===== MENSAJE ===== */
+
+#message{
+position:absolute;
+left:50%;
+bottom:15px;
+transform:translateX(-50%);
+background:black;
+padding:18px 35px;
+border-radius:20px;
+font-size:22px;
+box-shadow:0 0 20px rgba(0,0,0,.4);
+}
+
+/* ===== LOGIN ===== */
+
+#loginScreen{
+position:absolute;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#0f172a;
+z-index:1000;
+}
+
+.login-box{
+background:#1e293b;
+padding:40px;
+border-radius:25px;
+width:380px;
+text-align:center;
+box-shadow:0 0 40px rgba(0,0,0,.5);
+}
+
+/* ===== LOGIN DIVERTIDO ===== */
+
+.welcome-title{
+font-size:38px;
+margin-top:20px;
+margin-bottom:10px;
+color:white;
+text-shadow:
+0 0 10px #22c55e,
+0 0 20px #22c55e,
+0 0 40px #22c55e;
+animation:glow 2s infinite alternate;
+}
+
+.subtitle{
+opacity:.9;
+margin-bottom:25px;
+font-size:18px;
+}
+
+@keyframes glow{
+from{
+transform:scale(1);
+}
+to{
+transform:scale(1.05);
+}
+}
+
+#playerNameInput{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:rgba(255,255,255,.12);
+border:2px solid rgba(255,255,255,.2);
+color:white;
+font-size:18px;
+outline:none;
+transition:.3s;
+box-shadow:
+inset 0 0 10px rgba(255,255,255,.1);
+}
+
+#playerNameInput::placeholder{
+color:#cbd5e1;
+}
+
+#playerNameInput:focus{
+border-color:#22c55e;
+background:rgba(255,255,255,.18);
+box-shadow:
+0 0 15px #22c55e,
+0 0 30px rgba(34,197,94,.5),
+inset 0 0 15px rgba(255,255,255,.2);
+transform:scale(1.03);
+}
+
+.login-box button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:#22c55e;
+color:white;
+font-size:20px;
+font-weight:bold;
+cursor:pointer;
+margin-top:15px;
+transition:.3s;
+box-shadow:0 0 20px rgba(34,197,94,.4);
+}
+
+.login-box button:hover{
+transform:scale(1.05);
+box-shadow:
+0 0 20px #22c55e,
+0 0 40px rgba(34,197,94,.6);
+}
+
+/* ===== MINI DOMINO ===== */
+
+.domino-logo{
+display:flex;
+justify-content:center;
+margin-bottom:10px;
+}
+
+.mini-domino{
+width:90px;
+height:45px;
+background:#f8f4e8;
+border-radius:10px;
+display:flex;
+overflow:hidden;
+border:3px solid black;
+box-shadow:
+0 0 20px rgba(255,255,255,.3),
+0 0 40px rgba(34,197,94,.4);
+animation:floatDomino 2s ease-in-out infinite;
+}
+
+.mini-half{
+flex:1;
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+align-items:center;
+gap:4px;
+padding:5px;
+}
+
+.mini-half:first-child{
+border-right:3px solid black;
+}
+
+.mini-dot{
+width:8px;
+height:8px;
+background:black;
+border-radius:50%;
+}
+
+@keyframes floatDomino{
+0%{
+transform:translateY(0px) rotate(0deg);
+}
+50%{
+transform:translateY(-5px) rotate(2deg);
+}
+100%{
+transform:translateY(0px) rotate(0deg);
+}
+}
+
+/* ===== RESULTADO ===== */
+
+#resultModal{
+position:absolute;
+inset:0;
+background:rgba(0,0,0,.8);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:2000;
+}
+
+.modal-box{
+background:white;
+color:black;
+padding:40px;
+border-radius:20px;
+text-align:center;
+width:400px;
+}
+
+.modal-box h1{
+font-size:40px;
+margin-bottom:20px;
+}
+
+.modal-box button{
+padding:14px 25px;
+border:none;
+border-radius:10px;
+background:#22c55e;
+color:white;
+font-size:18px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+
+<div id="loginScreen">
+
+<div class="login-box">
+
+<div class="domino-logo">
+
+<div class="mini-domino">
+
+<div class="mini-half">
+<div class="mini-dot"></div>
+<div class="mini-dot"></div>
+<div class="mini-dot"></div>
+</div>
+
+<div class="mini-half">
+<div class="mini-dot"></div>
+<div class="mini-dot"></div>
+<div class="mini-dot"></div>
+</div>
+
+</div>
+
+</div>
+
+<h1 class="welcome-title">
+¡BIENVENIDO!🎲
+</h1>
+
+<p class="subtitle">
+
+</p>
+
+<input 
+type="text"
+id="playerNameInput"
+placeholder="Escribe tu nombre..."
+autocomplete="off"
+>
+
+<button onclick="startGame()">
+ JUGAR AHORA
+</button>
+
+</div>
+
+</div>
+
+<!-- JUEGO -->
+
+<div id="gameContainer">
+
+<div id="table">
+
+<div id="board"></div>
+
+<div id="topHand"></div>
+<div id="leftHand"></div>
+<div id="rightHand"></div>
+<div id="bottomHand"></div>
+
+<div id="topPlayer" class="player-name">BOT 1</div>
+<div id="leftPlayer" class="player-name">BOT 2</div>
+<div id="rightPlayer" class="player-name">BOT 3</div>
+<div id="bottomPlayer" class="player-name">TÚ</div>
+
+</div>
+
+<div id="controls">
+
+<button id="drawBtn" class="control-btn">
+COMER FICHA
+</button>
+
+<button id="passBtn" class="control-btn">
+PASAR
+</button>
+
+</div>
+
+<div id="message"></div>
+
+</div>
+
+<!-- RESULTADO -->
+
+<div id="resultModal">
+
+<div class="modal-box">
+
+<h1 id="resultTitle"></h1>
+
+<p id="resultText"></p>
+
+<br>
+
+<button onclick="location.reload()">
+VOLVER A JUGAR
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+const players = [
+{name:'', hand:[], bot:false},
+{name:'BOT 1', hand:[], bot:true},
+{name:'BOT 2', hand:[], bot:true},
+{name:'BOT 3', hand:[], bot:true}
+];
+
+let stock = [];
+let board = [];
+let currentPlayer = 0;
+let leftValue = null;
+let rightValue = null;
+
+const dotPatterns = {
+0: [],
+1: [4],
+2: [0,8],
+3: [0,4,8],
+4: [0,2,6,8],
+5: [0,2,4,6,8],
+6: [0,2,3,5,6,8]
+};
+
+function createDomino(a,b,hidden=false){
+
+const domino = document.createElement('div');
+
+const isDouble = a===b;
+
+domino.className = isDouble
+? 'domino'
+: 'domino horizontal';
+
+if(hidden){
+
+domino.className =
+'hiddenDomino'+(isDouble?'':' hidden-horizontal');
+
+return domino;
+
+}
+
+const half1 = document.createElement('div');
+half1.className='half';
+
+const half2 = document.createElement('div');
+half2.className='half';
+
+addDots(half1,a);
+addDots(half2,b);
+
+domino.appendChild(half1);
+domino.appendChild(half2);
+
+return domino;
+
+}
+
+function addDots(container,num){
+
+for(let i=0;i<9;i++){
+
+const spot = document.createElement('div');
+
+if(dotPatterns[num].includes(i)){
+
+const dot = document.createElement('div');
+
+dot.className='dot';
+
+spot.appendChild(dot);
+
+}
+
+container.appendChild(spot);
+
+}
+
+}
+
+function generateDominoes(){
+
+const arr=[];
+
+for(let i=0;i<=6;i++){
+
+for(let j=i;j<=6;j++){
+
+arr.push([i,j]);
+
+}
+
+}
+
+return arr;
+
+}
+
+function shuffle(array){
+
+for(let i=array.length-1;i>0;i--){
+
+const j=Math.floor(Math.random()*(i+1));
+
+[array[i],array[j]]=[array[j],array[i]];
+
+}
+
+}
+
+function startGame(){
+
+const name=document.getElementById('playerNameInput').value.trim();
+
+if(!name){
+
+alert('Escribe tu nombre');
+
+return;
+
+}
+
+players[0].name=name;
+
+document.getElementById('bottomPlayer').innerText=name;
+
+stock=generateDominoes();
+
+shuffle(stock);
+
+for(let p of players){
+
+p.hand=[];
+
+for(let i=0;i<7;i++){
+
+p.hand.push(stock.pop());
+
+}
+
+}
+
+board=[];
+
+startWithDoubleSix();
+
+document.getElementById('loginScreen').style.display='none';
+
+render();
+
+if(players[currentPlayer].bot){
+
+setTimeout(botPlay,1000);
+
+}
+
+}
+
+function startWithDoubleSix(){
+
+for(let p=0;p<players.length;p++){
+
+for(let i=0;i<players[p].hand.length;i++){
+
+const tile = players[p].hand[i];
+
+if(tile[0]===6 && tile[1]===6){
+
+players[p].hand.splice(i,1);
+
+board.push([6,6]);
+
+leftValue=6;
+rightValue=6;
+
+currentPlayer=(p+1)%4;
+
+return;
+
+}
+
+}
+
+}
+
+}
+
+function render(){
+
+renderBoard();
+renderHands();
+
+document.getElementById('message').innerHTML =
+'🎯 Turno de: <b>'+
+players[currentPlayer].name+
+'</b> | Extremos: ['+
+leftValue+' • '+rightValue+']';
+
+const myTurn = currentPlayer===0;
+
+document.getElementById('drawBtn').disabled=!myTurn;
+document.getElementById('passBtn').disabled=!myTurn;
+
+}
+
+function renderBoard(){
+
+const boardDiv=document.getElementById('board');
+
+boardDiv.innerHTML='';
+
+board.forEach(tile=>{
+
+const d=createDomino(tile[0],tile[1]);
+
+boardDiv.appendChild(d);
+
+});
+
+}
+
+function renderHands(){
+
+const top=document.getElementById('topHand');
+const left=document.getElementById('leftHand');
+const right=document.getElementById('rightHand');
+const bottom=document.getElementById('bottomHand');
+
+top.innerHTML='';
+left.innerHTML='';
+right.innerHTML='';
+bottom.innerHTML='';
+
+players[1].hand.forEach(()=>{
+top.appendChild(createDomino(0,0,true));
+});
+
+players[2].hand.forEach(()=>{
+left.appendChild(createDomino(0,0,true));
+});
+
+players[3].hand.forEach(()=>{
+right.appendChild(createDomino(0,0,true));
+});
+
+players[0].hand.forEach((tile,index)=>{
+
+const d=createDomino(tile[0],tile[1]);
+
+if(currentPlayer===0){
+
+d.onclick=()=>playTile(index);
+
+}
+
+bottom.appendChild(d);
+
+});
+
+}
+
+function canPlay(tile){
+
+return tile.includes(leftValue)
+|| tile.includes(rightValue);
+
+}
+
+function playerHasMove(player){
+
+return player.hand.some(tile=>canPlay(tile));
+
+}
+
+function playTile(index){
+
+if(currentPlayer!==0)return;
+
+const tile=players[0].hand[index];
+
+if(!canPlay(tile)){
+
+alert('Movimiento inválido');
+
+return;
+
+}
+
+makeMove(tile,players[0].hand,index);
+
+}
+
+function makeMove(tile,hand,index){
+
+if(tile[0]===rightValue){
+
+board.push(tile);
+
+rightValue=tile[1];
+
+}
+else if(tile[1]===rightValue){
+
+board.push([tile[1],tile[0]]);
+
+rightValue=tile[0];
+
+}
+else if(tile[1]===leftValue){
+
+board.unshift(tile);
+
+leftValue=tile[0];
+
+}
+else if(tile[0]===leftValue){
+
+board.unshift([tile[1],tile[0]]);
+
+leftValue=tile[1];
+
+}
+
+hand.splice(index,1);
+
+render();
+
+if(hand.length===0){
+
+endGame(currentPlayer===0);
+
+return;
+
+}
+
+nextTurn();
+
+}
+
+function nextTurn(){
+
+currentPlayer=(currentPlayer+1)%4;
+
+render();
+
+if(players[currentPlayer].bot){
+
+setTimeout(botPlay,1000);
+
+}
+
+}
+
+function botPlay(){
+
+const bot=players[currentPlayer];
+
+for(let i=0;i<bot.hand.length;i++){
+
+if(canPlay(bot.hand[i])){
+
+makeMove(bot.hand[i],bot.hand,i);
+
+return;
+
+}
+
+}
+
+while(stock.length>0){
+
+const newTile = stock.pop();
+
+bot.hand.push(newTile);
+
+render();
+
+if(canPlay(newTile)){
+
+setTimeout(()=>{
+
+makeMove(newTile,bot.hand,bot.hand.length-1);
+
+},700);
+
+return;
+
+}
+
+}
+
+nextTurn();
+
+}
+
+function endGame(win){
+
+const modal=document.getElementById('resultModal');
+
+modal.style.display='flex';
+
+document.getElementById('resultTitle').innerText =
+win ? '🎉 GANASTE' : '😢 PERDISTE';
+
+document.getElementById('resultText').innerText =
+win
+? 'Excelente partida profesional.'
+: 'Un bot ganó esta ronda.';
+
+}
+
+document.getElementById('drawBtn').onclick=()=>{
+
+if(currentPlayer!==0)return;
+
+if(playerHasMove(players[0])){
+
+alert('Ya tienes movimiento');
+
+return;
+
+}
+
+if(stock.length===0){
+
+alert('No hay más fichas');
+
+return;
+
+}
+
+let foundPlayable = false;
+
+while(stock.length>0 && !foundPlayable){
+
+const newTile = stock.pop();
+
+players[0].hand.push(newTile);
+
+if(canPlay(newTile)){
+
+foundPlayable = true;
+
+}
+
+}
+
+render();
+
+};
+
+document.getElementById('passBtn').onclick=()=>{
+
+if(currentPlayer!==0)return;
+
+if(playerHasMove(players[0])){
+
+alert('No puedes pasar');
+
+return;
+
+}
+
+nextTurn();
+
+};
+
+</script>
+
+</body>
+</html>
